@@ -2,6 +2,7 @@ import pandas as pd
 from lightweight_charts import Chart
 import MetaTrader5 as mt5
 import time
+from datetime import datetime
 
 
 if __name__ == '__main__':
@@ -29,7 +30,7 @@ if __name__ == '__main__':
   df['time'] = pd.to_datetime(df['time'], unit='s')
   # ajusta para o nome no tradinview
   df.rename(columns={'real_volume': 'volume'}, inplace=True)
-  #print(df.head())
+  print(df.head())
 
   chart = Chart()
     
@@ -42,8 +43,17 @@ if __name__ == '__main__':
     while True:
       tick = mt5.symbol_info_tick(symbol)
       print(tick)
-      #chart.update_from_tick(tick)    
-      time.sleep(1)
+      tickDateTime = pd.to_datetime(tick.time, unit='s')
+      # Criando um DataFrame
+      newTick = pd.DataFrame({
+        'time': [tickDateTime],  # Usando uma lista para criar a coluna
+        'price': [tick.last],
+        'volume': [tick.volume]
+      })
+      for i, tick in newTick.iterrows():    #não consegui fazer isso acessando o primeiro item (erro no update_from_tick)
+        chart.update_from_tick(tick)        #usei o código exemplo para fazer funcionar, mesmo que o dataframe tenha somente uma linha
+
+      time.sleep(5)
   except KeyboardInterrupt:
     print("Interrompendo captura de dados... (teclado)")
   finally:
