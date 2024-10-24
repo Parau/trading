@@ -1,0 +1,42 @@
+<head>
+  <script
+  type="text/javascript"
+  src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"
+></script>
+</head>
+
+<body>
+  <div id="chart"></div>
+    <script>
+    const chart = LightweightCharts.createChart(document.getElementById('chart'), {
+      width: 800,
+      height: 400,
+      layout: {
+        backgroundColor: '#fff',
+        textColor: '#000'
+      },
+      grid: {
+        vertLines: {
+          color: '#E1E4EA'
+        },
+        horzLines: {
+          color: '#E1E4EA'
+        }
+      },
+      priceScale: {
+        scaleMargins: {
+          top: 0.3,
+          bottom: 0.25
+        }
+      }
+    });
+
+    const candleSeries = chart.addCandlestickSeries();
+
+    candleSeries.setData([
+      { time: '2023-10-27', open: 100, high: 120, low: 90, close: 110 },
+      { time: '2023-10-28', open: 110, high: 125, low: 105, close: 120 },
+      // ... adicione mais dados aqui
+    ]);
+</script>
+</body>
