@@ -58,19 +58,61 @@ def generate_candlestick_data():
         'close': random.uniform(20, 25)
     }
 
+# Get historical data from MT5
+def get_historical_data():
+    rates = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M5, 0, 500)
+    df = pd.DataFrame(rates)
+    #df['time'] = pd.to_datetime(df['time'], unit='s') não precisa transformar deve ficar em inteiro
+    df.rename(columns={'real_volume': 'volume'}, inplace=True)
+    print(df.head())
+    return df.to_dict(orient='records')
+
+######################################
+# Get real-time tick data from MT5
+def get_real_time_tick():
+    tick = mt5.symbol_info_tick(symbol)
+    if tick:
+        return {
+            'time': tick.time,
+            'bid': tick.bid,
+            'ask': tick.ask,
+            'last': tick.last,
+            'volume': tick.volume
+        }
+    return None
+
+def get_lastbar_data():
+  rates = mt5.copy_rates_from_pos(symbol, mt5.TIMEFRAME_M5, 0, 1)
+  if rates is None or len(rates) == 0:
+      return None
+  latest_candle = rates[0]
+  return {
+    'time': int(latest_candle['time']),     # Unix timestamp
+    'open': latest_candle['open'],
+    'high': latest_candle['high'],
+    'low': latest_candle['low'],
+    'close': latest_candle['close'],
+    'volume': int(latest_candle['real_volume'])  # Sem o int estava dando erro no jsonify
+    }
+
+######################################
+# API
 # API endpoint for initial data
 @app.route('/api/initial-data', methods=['GET'])
 def get_initial_data():
   print('get_initial_data')
-  initial_data = [generate_candlestick_data() for _ in range(2500)]
+  initial_data = get_historical_data()
   return jsonify(initial_data)
+  #initial_data = [generate_candlestick_data() for _ in range(2500)]
+  #return jsonify(initial_data)
 
-
-######################################
 # updated-data
-
 # API endpoint for real-time updated data
 @app.route('/api/updated-data', methods=['GET'])
 def get_updated_data():
-    updated_data = generate_candlestick_data()
-    return jsonify(updated_data)
+    #updated_data = get_real_time_tick()
+    update = get_lastbar_data()
+    #print(update)
+    if update:
+      return jsonify(update)
+    return jsonify(None)

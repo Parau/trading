@@ -13,7 +13,7 @@
             textColor: 'black',
             background: { type: 'solid', color: 'white' },
           },
-          height: 200,
+          height: 500,
         };
 
       const container = document.getElementById('container');
@@ -31,6 +31,7 @@
       async function fetchInitialData() {
           const response = await fetch('/api/initial-data');
           const data = await response.json();
+          //console.log(data);
           series.setData(data);
           chart.timeScale().fitContent();
           chart.timeScale().scrollToPosition(5);
@@ -47,6 +48,7 @@
       const intervalID = setInterval(async () => {
           const update = await fetchUpdatedData();
           if (update) {
+              console.log(update);
               series.update(update);
           }
       }, 2000); // Adjust the interval as needed
