@@ -14,3 +14,7 @@ https://docs.conda.io/projects/conda/en/latest/commands/list.html
 
 ## Lista ambientes (environment) indicando atual
 * conda env list
+
+#### Iniciar interactive B
+Local: E:\dev\trading\IBKR
+Comando: bin\run.bat
