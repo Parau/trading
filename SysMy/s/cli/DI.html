@@ -1,0 +1,50 @@
+<head>
+  <script
+  type="text/javascript"
+  src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"
+></script>
+</head>
+
+<body>
+  <div id="container">
+    <table id="tickerTable">
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Last</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>DI1N26</td>
+          <td id="last"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <script>
+    // Fetch the current ticker value from the server
+    async function fetchTickerValue() {
+        const response = await fetch('/api/last-ticker-data/DI1N26');
+        const data = await response.json();
+        return data;
+    }
+
+    // Update the table with the current ticker value
+    const intervalID = setInterval(async () => {
+        const tickerValue = await fetchTickerValue();
+        if (tickerValue) {
+            console.log(tickerValue);
+            document.getElementById('last').innerText = tickerValue.last;
+        }
+    }, 2000); // Adjust the interval as needed
+
+    // Initial fetch
+    fetchTickerValue().then(tickerValue => {
+        if (tickerValue) {
+            document.getElementById('last').innerText = tickerValue.last;
+        }
+    });
+
+  </script>
+</body>

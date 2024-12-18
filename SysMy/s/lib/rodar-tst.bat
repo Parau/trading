@@ -1,0 +1,1 @@
+python ambima.py
