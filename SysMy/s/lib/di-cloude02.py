@@ -246,110 +246,6 @@ class CalculadoraDIFuturo:
                   f"{analise['reunioes_copom']:^10} "
                   f"{analise['mudanca_por_reuniao']:>+12.3f}")
 
-    def encontrar_di_mais_proximo(self, contratos: List[Tuple[date, float]], 
-                                 data_alvo: date) -> Tuple[date, float]:
-        """
-        Encontra o contrato DI mais próximo de uma data específica
-        """
-        if not contratos:
-            return None
-            
-        # Ordena contratos por proximidade à data alvo
-        contratos_ordenados = sorted(contratos, 
-                                   key=lambda x: abs((x[0] - data_alvo).days))
-        return contratos_ordenados[0]
-    
-    def analisar_expectativas_por_reuniao(self, 
-                                         contratos: List[Tuple[date, float]]) -> List[Dict]:
-        """
-        Analisa expectativas para cada reunião do COPOM usando os DIs mais próximos
-        """
-        # Datas aproximadas das próximas reuniões do COPOM
-        datas_copom_2024 = [
-            date(2024, 1, 31),
-            date(2024, 3, 20),
-            date(2024, 5, 8),
-            date(2024, 6, 19),
-            date(2024, 8, 1),
-            date(2024, 9, 18),
-            date(2024, 11, 7),
-            date(2024, 12, 11)
-        ]
-        
-        datas_copom_2025 = [
-            date(2025, 1, 29),
-            date(2025, 3, 19),
-            date(2025, 5, 7),
-            date(2025, 6, 18),
-            date(2025, 7, 30),
-            date(2025, 9, 17),
-            date(2025, 11, 5),
-            date(2025, 12, 10)
-        ]
-        
-        datas_copom_2026 = [
-            date(2026, 1, 28),
-            date(2026, 3, 18),
-            date(2026, 5, 6),
-            date(2026, 6, 17),
-            date(2026, 7, 29),
-            date(2026, 9, 16),
-            date(2026, 11, 4),
-            date(2026, 12, 9)
-        ]
-        
-        datas_copom = datas_copom_2024 + datas_copom_2025 + datas_copom_2026
-        
-        # Análise por reunião
-        analise_reunioes = []
-        taxa_anterior = self.cdi_atual
-        
-        for data_copom in datas_copom:
-            if data_copom <= date.today():
-                continue
-                
-            # Encontra DI mais próximo
-            contrato_proximo = self.encontrar_di_mais_proximo(contratos, data_copom)
-            if contrato_proximo:
-                data_di, taxa_di = contrato_proximo
-                
-                # Calcula mudança esperada
-                mudanca = taxa_di - taxa_anterior
-                
-                analise_reunioes.append({
-                    'data_copom': data_copom,
-                    'di_proximo': data_di,
-                    'taxa_di': taxa_di,
-                    'taxa_anterior': taxa_anterior,
-                    'mudanca_esperada': round(mudanca, 3)
-                })
-                
-                taxa_anterior = taxa_di
-        
-        return analise_reunioes
-    
-    def imprimir_analise_reunioes(self, contratos: List[Tuple[date, float]]):
-        """
-        Imprime análise detalhada por reunião do COPOM
-        """
-        print("\n=== ANÁLISE POR REUNIÃO DO COPOM ===")
-        print(f"\nData da análise: {date.today().strftime('%d/%m/%Y')}")
-        print(f"CDI atual: {self.cdi_atual}% a.a.")
-        
-        analise = self.analisar_expectativas_por_reuniao(contratos)
-        
-        print("\nExpectativas por Reunião:")
-        print("-" * 85)
-        print(f"{'Data COPOM':<12} {'DI Ref.':<12} {'Taxa DI':<10} {'Taxa Ant.':<10} {'Mudança':<12}")
-        print("-" * 85)
-        
-        for a in analise:
-            print(f"{a['data_copom'].strftime('%d/%m/%Y'):<12} "
-                  f"{a['di_proximo'].strftime('%d/%m/%Y'):<12} "
-                  f"{a['taxa_di']:<10.3f} "
-                  f"{a['taxa_anterior']:<10.3f} "
-                  f"{a['mudanca_esperada']:>+12.3f}")
-
 def exemplo_completo():
     # CDI atual
     cdi_atual = 12.25
@@ -366,11 +262,15 @@ def exemplo_completo():
     # Inicializa calculadora
     calc = CalculadoraDIFuturo(cdi_atual=cdi_atual)
     
-    # Imprime análise por reunião
-    calc.imprimir_analise_reunioes(contratos)
-    
-    # Imprime análise forward (mantida do código anterior)
+    # Imprime análise detalhada
     calc.imprimir_analise_detalhada(contratos)
+    
+    # Plota visualizações
+    calc.plotar_curva_juros(contratos)
+    plt.show()
+    
+    calc.plotar_taxas_forward(contratos)
+    plt.show()
 
 if __name__ == "__main__":
     exemplo_completo()

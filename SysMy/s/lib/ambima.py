@@ -1,36 +1,54 @@
-import csv
+from datetime import datetime, timedelta
+from ambima_feriados import FERIADOS  # Importa a lista de feriados do módulo ambima_feriados
 
-FILEPATH = 'anbima.csv'
+def dias_uteis(data_inicial: datetime, data_final: datetime) -> int:
+    """
+    Calcula o número de dias úteis entre duas datas, considerando feriados nacionais.
+    
+    :param data_inicial: Data inicial (inclusive). Passar somente data e não data com hora. Ex.: datetime(2023, 1, 1).date()
+    :param data_final: Data final (exclusive). Passar somente data e não data com hora. Ex.: datetime(2024, 1, 1).date()
+    :return: Número de dias úteis entre as duas datas.
+    """
+    #print(f"Datas recebidas pelo dias_uteis para calculo: {data_inicial} e {data_final}")
 
-def load_holidays(filepath):
-    with open(filepath) as file:
-        content = file.readlines()
-        items = csv.DictReader(content)
-        holidays = list(items)
+    if data_inicial > data_final:
+        data_inicial, data_final = data_final, data_inicial
 
-    return holidays
+    delta = timedelta(days=1)
+    dias_uteis_contagem = 0
 
-from collections import defaultdict
-from datetime import datetime
+    while data_inicial < data_final:
+        if data_inicial.weekday() < 5 and data_inicial not in FERIADOS:
+            dias_uteis_contagem += 1
+        data_inicial += delta
 
-def generate_holidays_file(holidays):
-    holidays_by_year = defaultdict(dict)
-    for holiday in holidays:
-        date = datetime.strptime(holiday['date'], '%d/%m/%y')
-        holiday_name = holiday['name']
-        if holiday_name in holidays_by_year[date.year]:
-            holiday_name += ' 2'
+    return dias_uteis_contagem
 
-        holidays_by_year[date.year][holiday_name] = f"date({date.year}, {date.month}, {date.day})"
+def dias_uteis_no_ano(ano: int) -> int:
+    """
+    Calcula o número de dias úteis em um determinado ano.
 
-    with open('anbima_holidays.py', 'w') as file:
-        file.write("from datetime import date \n\n")
-        file.write("HOLIDAYS = {\n")
-        for year, holidays in holidays_by_year.items():
-            file.write(f'    "{year}": {{\n')
-            for name, date in holidays.items():
-                file.write(f'        "{name}": {date},\n')
-            file.write("    },\n")
-        file.write("}\n")
-holidays = load_holidays(FILEPATH)
-generate_holidays_file(holidays)
+    :param ano: Ano para o cálculo.
+    :return: Número de dias úteis no ano especificado.
+    """
+    data_inicial = datetime(ano, 1, 1).date()
+    data_final = datetime(ano + 1, 1, 1).date()
+
+    #print(f"Datas que serão enviadas ao dias_uteis: {data_inicial} e {data_final}")
+
+    return dias_uteis(data_inicial, data_final)
+
+# Exemplos de uso
+if __name__ == "__main__":
+    # Exemplo: Dias úteis entre duas datas
+    data1 = datetime(2023, 1, 1).date()
+    data2 = datetime(2023, 1, 10).date()
+    print(f"Dias úteis entre {data1} e {data2}: {dias_uteis(data1, data2)}")
+
+    data1 = datetime(2023, 1, 1).date()
+    data2 = datetime(2024, 1, 1).date()
+    print(f"Dias úteis entre {data1} e {data2}: {dias_uteis(data1, data2)}")
+
+    # Exemplo: Dias úteis em um ano
+    ano = 2023
+    print(f"Dias úteis no ano de {ano}: {dias_uteis_no_ano(ano)}")

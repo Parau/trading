@@ -1,1 +1,1 @@
-python ambima.py
+python di.py
