@@ -1,8 +1,12 @@
-from flask import Flask, send_from_directory, jsonify
+from flask import Flask, send_from_directory, jsonify, request
 import MetaTrader5 as mt5
 import pandas as pd
 import random
 import time
+from datetime import datetime
+import sys
+sys.path.append('./lib')
+import di as di
 
 # Initialize MT5 connection
 if not mt5.initialize():
@@ -136,11 +140,66 @@ def get_updated_data():
       return jsonify(update)
     return jsonify(None)
 
-# get-data2
-# API endpoint for real-time updated data nesta versão passa o símbolo como parâmetro
-@app.route('/api/last-ticker-data/<tickerName>', methods=['GET'])
-def get_ticker_data(tickerName):
-  update = get_real_time_tick2(tickerName)
-  if update:
-    return jsonify(update)
-  return jsonify(None)
+# last-ticker-data
+# API endpoint for real-time updated data nesta versão passa de 1 a n símbolos como parâmetro
+@app.route('/api/last-ticker-data', methods=['GET'])
+def get_ticker_data():
+  ticker_names = request.args.getlist('tickerName')
+  updates = {}
+  for ticker in ticker_names:
+    # Como não tem um ticker específico para o CDI, foi criado um if para tratar este caso
+    if ticker == "CDI":
+      updates[ticker] = {
+        'time': int(time.time()),
+        'bid': 12.25,
+        'ask': 12.25,
+        'last': 12.25,
+        'volume': 0
+      }
+    else:
+      update = get_real_time_tick2(ticker)
+      if update:
+        updates[ticker] = update
+  return jsonify(updates)
+
+# estimate-cdi
+# API endpoint for real-time updated data nesta versão passa de 1 a n símbolos como parâmetro
+@app.route('/api/estimate-cdi', methods=['GET'])
+def get_CDI_estimate():
+  ticker = request.args.get('ticker')
+  target_rate = request.args.get('target_rate', type=float)
+  
+  if not ticker or target_rate is None:
+    return jsonify({'error': 'Ticker and target_rate are required'}), 400
+  
+  initial_date = datetime.now().date()
+  
+  ticker_dates = {
+    "DI1N24": datetime(2024, 7, 1).date(),
+    "DI1F25": datetime(2025, 1, 2).date(),
+    "DI1N25": datetime(2025, 7, 1).date(),
+    "DI1F26": datetime(2026, 1, 2).date(),
+    "DI1N26": datetime(2026, 7, 1).date(),
+    "DI1F27": datetime(2027, 1, 4).date(),
+    "DI1F28": datetime(2028, 1, 3).date(),
+    "DI1F29": datetime(2029, 1, 2).date(),
+    "DI1F30": datetime(2030, 1, 2).date(),
+    "DI1F31": datetime(2031, 1, 2).date()
+  }
+
+  final_date = ticker_dates.get(ticker)
+  if not final_date:
+    return jsonify({'error': 'Invalid ticker'}), 400
+
+  # CDI atual  
+  initial_rate = 12.25  
+
+  # Chame a função EstimaCDI
+  resultado = di.EstimaCDI(initial_rate, target_rate, initial_date, final_date)
+
+  # Convert DataFrame to dictionary
+  resultado_dict = resultado.to_dict(orient='records')
+
+  print({'result': resultado_dict})
+
+  return jsonify({'result': resultado_dict})

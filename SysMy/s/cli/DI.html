@@ -14,37 +14,112 @@
           <th>Last</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="tickerBody">
+        <!-- Rows will be inserted here dynamically -->
+      </tbody>
+    </table>
+    <button id="updateButton">Update Ticker</button>
+    <table id="cdiEstimateTable">
+      <thead>
         <tr>
-          <td>DI1N26</td>
-          <td id="last"></td>
+          <th>Date</th>
+          <th>Rate</th>
+          <th>Type</th>
         </tr>
+      </thead>
+      <tbody id="cdiEstimateBody">
+        <!-- CDI estimate result will be inserted here dynamically -->
       </tbody>
     </table>
   </div>
   <script>
+    const tickers = ['CDI', 'DI1N26', 'DI1F27']; // Define the tickers
+
+    // Function to create table rows for each ticker
+    function createTickerRows() {
+        const tbody = document.getElementById('tickerBody');
+        tickers.forEach(ticker => {
+            const row = document.createElement('tr');
+            const tickerCell = document.createElement('td');
+            tickerCell.innerText = ticker;
+            const lastCell = document.createElement('td');
+            lastCell.id = `last-${ticker}`;
+            row.appendChild(tickerCell);
+            row.appendChild(lastCell);
+            tbody.appendChild(row);
+        });
+    }
+
     // Fetch the current ticker value from the server
-    async function fetchTickerValue() {
-        const response = await fetch('/api/last-ticker-data/DI1N26');
+    async function fetchTickerValue(tickers) {
+        const params = new URLSearchParams();
+        tickers.forEach(ticker => params.append('tickerName', ticker));
+        const response = await fetch(`/api/last-ticker-data?${params.toString()}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
         return data;
     }
 
-    // Update the table with the current ticker value
-    const intervalID = setInterval(async () => {
-        const tickerValue = await fetchTickerValue();
-        if (tickerValue) {
-            console.log(tickerValue);
-            document.getElementById('last').innerText = tickerValue.last;
+    // Fetch the CDI estimate from the server
+    async function fetchCDIEstimate(ticker, targetRate) {
+        const params = new URLSearchParams({ ticker, target_rate: targetRate });
+        const response = await fetch(`/api/estimate-cdi?${params.toString()}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-    }, 2000); // Adjust the interval as needed
+        const data = await response.json();
+        return data.result; // Assuming the result is in the 'result' key
+    }
 
-    // Initial fetch
-    fetchTickerValue().then(tickerValue => {
-        if (tickerValue) {
-            document.getElementById('last').innerText = tickerValue.last;
+    // Update the table with the current ticker value and CDI estimate
+    async function updateTicker() {
+        try {
+            const tickerValues = await fetchTickerValue(tickers);
+            tickers.forEach(async ticker => {
+                const lastCell = document.getElementById(`last-${ticker}`);
+                if (tickerValues[ticker]) {
+                    console.log(tickerValues[ticker]);
+                    lastCell.innerText = tickerValues[ticker].last;
+
+                    if (ticker === 'DI1N26') {
+                        const cdiEstimate = await fetchCDIEstimate(ticker, tickerValues[ticker].last);
+                        updateCDIEstimateTable(cdiEstimate);
+                    }
+                } else {
+                    lastCell.innerText = 'No data';
+                }
+            });
+        } catch (error) {
+            console.error('Error fetching ticker value:', error);
+            tickers.forEach(ticker => {
+                const lastCell = document.getElementById(`last-${ticker}`);
+                lastCell.innerText = 'Error fetching data';
+            });
         }
-    });
+    }
 
+    // Update the CDI estimate table with the result
+    function updateCDIEstimateTable(cdiEstimate) {
+        const tbody = document.getElementById('cdiEstimateBody');
+        tbody.innerHTML = ''; // Clear previous results
+        cdiEstimate.forEach(entry => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${new Date(entry.data_reuniao).toLocaleDateString()}</td>
+                <td>${entry.taxa.toFixed(3)}%</td>
+                <td>${entry.manual ? 'Manual' : 'Calculada'}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    // Initial setup on page load
+    createTickerRows();
+    updateTicker();
+
+    // Add event listener to the button
+    document.getElementById('updateButton').addEventListener('click', updateTicker);
   </script>
 </body>

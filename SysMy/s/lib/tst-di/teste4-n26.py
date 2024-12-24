@@ -1,7 +1,8 @@
 import QuantLib as ql
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
-#import ambima as ambima
+import numpy as np
+import ambima as ambima
 
 def create_brazil_calendar():
     """
@@ -127,16 +128,6 @@ def calculate_average_rate(schedule_df, start_date, end_date, calendar):
     
     return weighted_sum / total_days if total_days > 0 else 0
 
-# Define a função que retorna as taxas manuais
-def get_manual_rates():
-    return {
-        '2024-12-11': 12.25,  # já foi
-        '2025-01-29': 13.25,  # Estimado na ata do copom
-        '2025-03-19': 14.25,  # Estimado na ata do copom
-        '2025-05-07': 15.25,  # Considerando estimativa da skopus de selic terminal 15,50
-        '2025-06-18': 15.50   # sendo um pouco mais agressivo considerando o din26 alto  
-    }
-
 def main():
     # Parâmetros iniciais
     initial_date = datetime(2024, 12, 23)
@@ -144,8 +135,14 @@ def main():
     initial_rate = 12.25  # CDI atual
     target_rate = 15.530  # Taxa DI1N26
     
-    # Taxas definidas manualmente
-    manual_rates = get_manual_rates()
+    # Taxas definidas manualmente (exemplo)
+    manual_rates = {
+        '2024-12-11': 12.25,  # já foi
+        '2025-01-29': 13.25,  # Estimado na ata do copom
+        '2025-03-19': 14.25,  # Estimado na ata do copom
+        '2025-05-07': 15.25,  # Considerando estimativa da skopus de selic terminal 15,50
+        '2025-06-18': 15.50   # sendo um pouco mais agressivo considerando o din26 alto  
+    }
     
     # Criar calendário brasileiro
     calendar = create_brazil_calendar()
@@ -154,9 +151,9 @@ def main():
     # Para testar diferença entre QuantLib e Ambima (no restuldo do teste com 2024 e 2025 não deu diferença)
     start_date = ql.Date(1, 1, 2024)
     end_date = ql.Date(31, 12, 2024)
-    #business_days = calendar.businessDaysBetween(start_date, end_date)
-    #business_days_ambima = ambima.dias_uteis(datetime(2024, 1, 1).date(), datetime(2024, 12, 31).date())
-    #print(f"Quantidade de dias úteis entre 01/01/2024 e 31/12/2024: {business_days} (QuantLib) {business_days_ambima} (Ambima)")
+    business_days = calendar.businessDaysBetween(start_date, end_date)
+    business_days_ambima = ambima.dias_uteis(datetime(2024, 1, 1).date(), datetime(2024, 12, 31).date())
+    print(f"Quantidade de dias úteis entre 01/01/2024 e 31/12/2024: {business_days} (QuantLib) {business_days_ambima} (Ambima)")
     
     # Criar cronograma de reuniões
     schedule_df = create_copom_schedule()
@@ -180,25 +177,5 @@ def main():
     print(f"Taxa alvo (DI1N26): {target_rate}%")
     print(f"Diferença: {abs(average_rate - target_rate):.3f}%")
 
-def EstimaCDI(initial_rate, target_rate, initial_date, final_date):
-    manual_rates = get_manual_rates()
-
-    # Criar calendário brasileiro
-    calendar = create_brazil_calendar()
-    
-    # Criar cronograma de reuniões
-    schedule_df = create_copom_schedule()
-    
-    # Definir taxas manuais
-    schedule_df = set_manual_rates(schedule_df, manual_rates)
-    
-    # Otimizar taxas restantes
-    rates_df = optimize_remaining_rates(schedule_df, initial_rate, target_rate, calendar)
-    
-    # Calcular taxa média
-    average_rate = calculate_average_rate(rates_df, initial_date, final_date, calendar)
-    
-    return rates_df
-    
 if __name__ == "__main__":
     main()
