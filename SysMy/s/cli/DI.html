@@ -32,6 +32,51 @@
       </tbody>
     </table>
   </div>
+
+  <div id="chart" style="width: 600px; height: 400px;"></div>
+  <script>
+    function updateChart(cdiEstimate) {
+      console.log(cdiEstimate);
+      if (!Array.isArray(cdiEstimate)) {
+        console.error('cdiEstimate is not an array:', cdiEstimate);
+        return;
+      }
+
+      const chart = LightweightCharts.createChart(document.getElementById('chart'), {
+        width: 600,
+        height: 400,
+      });
+
+      const lineSeries = chart.addLineSeries({
+        lineType: LightweightCharts.LineType.WithSteps, // Set the line type to Step
+      });
+
+      const data = cdiEstimate.map(item => {
+        if (!item.data_efetiva || !item.taxa) {
+          console.error('Invalid item in cdiEstimate:', item);
+          return null;
+        }
+        return {
+          time: new Date(item.data_efetiva).getTime() / 1000, // Convert to Unix timestamp
+          value: item.taxa,
+        };
+      }).filter(item => item !== null);
+
+      lineSeries.setData(data);
+      // Add markers to each data point
+      const markers = data.map(point => ({
+        time: point.time,
+        position: 'inBar',
+        color: 'red',
+        shape: 'circle',
+        text: '',
+      }));
+
+      lineSeries.setMarkers(markers);
+      chart.timeScale().fitContent();
+    }
+  </script>
+
   <script>
     const tickers = ['CDI', 'DI1N26', 'DI1F27']; // Define the tickers
 
@@ -86,6 +131,7 @@
                     if (ticker === 'DI1N26') {
                         const cdiEstimate = await fetchCDIEstimate(ticker, tickerValues[ticker].last);
                         updateCDIEstimateTable(cdiEstimate);
+                        updateChart(cdiEstimate);
                     }
                 } else {
                     lastCell.innerText = 'No data';
