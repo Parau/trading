@@ -1,0 +1,60 @@
+<head>
+  <script
+  type="text/javascript"
+  src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"
+></script>
+</head>
+
+<body>
+  <div id="container"></div>
+    <script>
+      const chartOptions = {
+          layout: {
+            textColor: 'black',
+            background: { type: 'solid', color: 'white' },
+          },
+          height: 500,
+        };
+
+      const container = document.getElementById('container');
+      const chart = LightweightCharts.createChart(container, chartOptions);
+
+      const series = chart.addCandlestickSeries({
+          upColor: '#26a69a',
+          downColor: '#ef5350',
+          borderVisible: false,
+          wickUpColor: '#26a69a',
+          wickDownColor: '#ef5350',
+      });
+
+      // Fetch initial data from the server
+      async function fetchInitialData() {
+          const response = await fetch('/api/initial-data');
+          const data = await response.json();
+          //console.log(data);
+          series.setData(data);
+          chart.timeScale().fitContent();
+          chart.timeScale().scrollToPosition(5);
+      }
+
+      // Fetch updated data from the server
+      async function fetchUpdatedData() {
+          const response = await fetch('/api/updated-data');
+          const data = await response.json();
+          return data;
+      }
+
+      // Update the chart with real-time data from the server
+      const intervalID = setInterval(async () => {
+          const update = await fetchUpdatedData();
+          if (update) {
+              console.log(update);
+              series.update(update);
+          }
+      }, 2000); // Adjust the interval as needed
+
+      // Call the function to fetch initial data on load
+      fetchInitialData();
+
+  </script>
+</body>
