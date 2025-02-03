@@ -1,0 +1,1 @@
+Utilizo este diretório para gerar alguns programas python de teste antes de incorporar o código em uma API que exige a comunicação a partir do cliente para testar.

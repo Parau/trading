@@ -43,7 +43,11 @@ export function ChartComponent({ ticker, onSeriesReady }: ChartComponentProps) {
       wickUpColor: '#26a69a',
       wickDownColor: '#ef5350',
 
-
+      priceFormat: {
+        type: 'price',
+        precision: 2,
+        minMove: 0.01,
+      },
       //////////////////////////////
       lastValueVisible: true,          // Shows the last value
       priceLineVisible: true,         // Shows the price line

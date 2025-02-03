@@ -1,3 +1,4 @@
+//Documentação lightweight-charts:https://tradingview.github.io/lightweight-charts/tutorials/how_to/horizontal-price-scale
 import { HeaderMenu } from '../components/HeaderMenu/HeaderMenu';
 import { ChartComponent } from '../components/ChartComponent/ChartComponent';
 import { useEffect, useState, useRef } from 'react';
@@ -17,6 +18,7 @@ const API_BASE = 'http://127.0.0.1:5000/api';
 export default function DIPage() {
   const [isInitialDataLoaded, setIsInitialDataLoaded] = useState(false);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
+  const lastCandleRef = useRef<ChartData | null>(null);
 
   // Carregar dados históricos
   useEffect(() => {
@@ -53,25 +55,48 @@ export default function DIPage() {
           `${API_BASE}/last-ticker-data?tickerName=${TICKER_NAME}`
         );
         const data = await response.json();
-        console.log('Dados em tempo real:', data[TICKER_NAME]);
-        if (data[TICKER_NAME] && seriesRef.current) {
+        const price = Number(data[TICKER_NAME].last);
+        
+        // Convert to milliseconds for compatibility
+        const currentTime = new Date().getTime();
+        const currentBar = Math.floor(currentTime / (5 * 60 * 1000)) * (5 * 60);
 
-          console.log("Atualizando dados da série no gráfico");
-          seriesRef.current.update({
-            time: data[TICKER_NAME].time,
-            open: Number(data[TICKER_NAME].last),
-            high: Number(data[TICKER_NAME].last),
-            low: Number(data[TICKER_NAME].last),
-            close: Number(data[TICKER_NAME].last)
-          });
-
+        if (!lastCandleRef.current || lastCandleRef.current.time !== currentBar) {
+          // Create a new candle
+          const newCandle: ChartData = {
+            time: currentBar,
+            open: price,
+            high: price,
+            low: price,
+            close: price,
+          };
+          
+          if (seriesRef.current) {
+            seriesRef.current.update(newCandle);
+            lastCandleRef.current = newCandle;
+          }
+        } else {
+          // Update current candle
+          const updatedCandle: ChartData = {
+            time: currentBar,
+            open: lastCandleRef.current.open,
+            high: Math.max(lastCandleRef.current.high, price),
+            low: Math.min(lastCandleRef.current.low, price),
+            close: price,
+          };
+          
+          if (seriesRef.current) {
+            seriesRef.current.update(updatedCandle);
+            lastCandleRef.current = updatedCandle;
+            
+          }
         }
       } catch (error) {
         console.error('Erro ao atualizar dados:', error);
       }
     }
 
-    const intervalId = setInterval(fetchRealtimeData, 2000);
+    const intervalId = setInterval(fetchRealtimeData, 2000); // Atualização mais frequente
     return () => clearInterval(intervalId);
   }, [isInitialDataLoaded]);
 
