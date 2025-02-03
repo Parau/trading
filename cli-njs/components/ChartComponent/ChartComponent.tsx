@@ -34,6 +34,7 @@ export function ChartComponent({ ticker, onSeriesReady }: ChartComponentProps) {
       height: 500,
     };
 
+    console.log('Criando gráfico para', ticker);
     const chart = createChart(chartContainerRef.current, chartOptions);
     const candlestickSeries = chart.addCandlestickSeries({
       upColor: '#26a69a',
@@ -41,6 +42,19 @@ export function ChartComponent({ ticker, onSeriesReady }: ChartComponentProps) {
       borderVisible: false,
       wickUpColor: '#26a69a',
       wickDownColor: '#ef5350',
+
+
+      //////////////////////////////
+      lastValueVisible: true,          // Shows the last value
+      priceLineVisible: true,         // Shows the price line
+      priceLineWidth: 1,
+      priceLineColor: '#2196F3',
+      priceLineStyle: 2,              // 0 = solid, 1 = dotted, 2 = dashed
+      baseLineVisible: true,
+      baseLineWidth: 1,
+      baseLineColor: '#2196F3',
+      baseLineStyle: 0,
+      ////////////////////////////
     });
 
     chartRef.current = chart;

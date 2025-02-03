@@ -11,7 +11,7 @@ interface ChartData {
   close: number;
 }
 
-const TICKER_NAME = 'DI1N26';
+const TICKER_NAME = 'WDO$';
 const API_BASE = 'http://127.0.0.1:5000/api';
 
 export default function DIPage() {
@@ -53,8 +53,10 @@ export default function DIPage() {
           `${API_BASE}/last-ticker-data?tickerName=${TICKER_NAME}`
         );
         const data = await response.json();
-        
+        console.log('Dados em tempo real:', data[TICKER_NAME]);
         if (data[TICKER_NAME] && seriesRef.current) {
+
+          console.log("Atualizando dados da série no gráfico");
           seriesRef.current.update({
             time: data[TICKER_NAME].time,
             open: Number(data[TICKER_NAME].last),
@@ -62,6 +64,7 @@ export default function DIPage() {
             low: Number(data[TICKER_NAME].last),
             close: Number(data[TICKER_NAME].last)
           });
+
         }
       } catch (error) {
         console.error('Erro ao atualizar dados:', error);
@@ -75,7 +78,7 @@ export default function DIPage() {
   return (
     <>
       <HeaderMenu />
-      <div style={{ padding: '20px' }}>
+      <div style={{ padding: '10px' }}>
         <ChartComponent 
           ticker={TICKER_NAME} 
           onSeriesReady={(series) => {
