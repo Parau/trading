@@ -1,0 +1,1 @@
+python b3-dolar-captura.py

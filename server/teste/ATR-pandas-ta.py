@@ -80,51 +80,7 @@ def get_stock_data(symbol, period="1y", interval="1h", trading_session_only=Fals
     mt5.shutdown()
     return df
 
-# Function to calculate volatility for different timeframes
-def calculate_volatility(df, windows=[20, 5*20, 20*20]):
-    """
-    Calculate volatility for different timeframes
-    
-    Parameters:
-    df (DataFrame): Price data
-    windows (list): List of periods for volatility calculation
-    """
-    # Calculate returns
-    df['returns'] = df['Close'].pct_change()
-    
-    # Calculate volatility for different windows
-    for window in windows:
-        df[f'volatility_{window}'] = df['returns'].rolling(window=window).std() * (252 ** 0.5)  # Annualized
-        
-    return df
 
-def calculate_volatility_intraday(df, window=60, full_session=False):
-    """
-    Calculate rolling intraday volatility using both percentage and points
-    
-    Parameters:
-    df (DataFrame): Price data with minute timeframe
-    window (int): Window size in minutes for volatility calculation
-    full_session (bool): If True, uses all available minutes of the session
-    """
-    # Calculate simple returns for easier interpretation
-    df['returns'] = df['Close'].pct_change()
-    
-    # If full_session is True, use all available minutes
-    if full_session:
-        window = len(df)
-    
-    # Calculate rolling volatility in percentage (não anualizada)
-    df['volatility'] = df['returns'].rolling(window=window, min_periods=2).std()
-    
-    # Calculate volatility in points
-    df['price_diff'] = df['Close'] - df['Close'].shift(1)
-    df['volatility_points'] = df['price_diff'].rolling(window=window, min_periods=2).std()
-    
-    # Add timestamp for easier reading
-    df['time_str'] = df.index.strftime('%H:%M')
-    
-    return df
 
 def calculate_atr_intraday(df, window=60, full_session=False):
     """

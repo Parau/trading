@@ -1,4 +1,4 @@
-//Documentação integração MT5 com python: https://www.mql5.com/en/docs/python_metatrader5
+## Documentação integração MT5 com python: https://www.mql5.com/en/docs/python_metatrader5
 from flask import Flask, send_from_directory, jsonify, request
 from flask_cors import CORS
 
