@@ -1,1 +1,1 @@
-python b3-dolar-captura.py
+python barreiras_liquidez.py

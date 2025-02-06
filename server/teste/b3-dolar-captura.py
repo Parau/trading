@@ -134,6 +134,7 @@ def extract_options_tables(pdf_path: str, output_path: str = '_sem-nome.xlsx', h
 if __name__ == "__main__":
     #pdf_file = "BDI_03-1_20250131.pdf"
     #pdf_file = "BDI_03-1_20250204.pdf" 
-    pdf_file = "BDI_03-1_20250203.pdf" 
+    #pdf_file = "BDI_03-1_20250203.pdf" 
+    pdf_file = "BDI_03-1_20250205.pdf" 
     output_file = extract_options_tables(pdf_file, "_DOL_OP_Compra.xlsx", "Mercado de Opções Sobre Disponível - Compra")
     output_file = extract_options_tables(pdf_file, "_DOL_OP_Venda.xlsx", "Mercado de Opções Sobre Disponível - Venda", "WDO: Dólar Míni")
