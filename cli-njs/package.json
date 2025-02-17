@@ -21,6 +21,7 @@
     "storybook:build": "storybook build"
   },
   "dependencies": {
+    "@amcharts/amcharts5": "^5.11.0",
     "@mantine/core": "7.16.2",
     "@mantine/hooks": "7.16.2",
     "@next/bundle-analyzer": "^15.1.5",

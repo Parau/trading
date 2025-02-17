@@ -128,15 +128,23 @@ def extract_options_tables(pdf_path: str, output_path: str = '_sem-nome.xlsx', h
     
     output_filename = pdf_path.replace('.pdf', output_path)
     df.to_excel(output_filename, index=False)
+    df.to_csv(output_filename.replace('.xlsx', '.csv'), index=False, encoding='utf-8-sig', sep=';')  # Modificado aqui
     
     doc.close()
     return output_filename
 
-# Usage example
+def GenerateCSVOptions(pdf_file):
+    extract_options_tables(pdf_file, "_DOL_OP_Compra.xlsx", "Mercado de Opções Sobre Disponível - Compra")
+    extract_options_tables(pdf_file, "_DOL_OP_Venda.xlsx", "Mercado de Opções Sobre Disponível - Venda", "WDO: Dólar Míni")
+    return 
+
+
+# Use para teste e modificações rodando diretamente no console python e não no sistema servidor
+# python BoletimDiarioB3.py
 if __name__ == "__main__":
     #pdf_file = "BDI_03-1_20250131.pdf"
     #pdf_file = "BDI_03-1_20250204.pdf" 
     #pdf_file = "BDI_03-1_20250203.pdf" 
-    pdf_file = "BDI_03-1_20250205.pdf" 
+    pdf_file = "BDI_03-1_20250213.pdf" 
     output_file = extract_options_tables(pdf_file, "_DOL_OP_Compra.xlsx", "Mercado de Opções Sobre Disponível - Compra")
     output_file = extract_options_tables(pdf_file, "_DOL_OP_Venda.xlsx", "Mercado de Opções Sobre Disponível - Venda", "WDO: Dólar Míni")

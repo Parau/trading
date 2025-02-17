@@ -17,8 +17,8 @@ const links = [
       { link: '/blog', label: 'Blog' },
     ],
   },
-  { link: '/di', label: 'DI' }, // Modificado aqui
-  { link: '/pricing', label: 'Pricing' },
+  { link: '/di', label: 'DI' },
+  { link: '/dolar', label: 'Dólar' }, // Updated to lowercase URL
   {
     link: '#2',
     label: 'Support',

@@ -6,6 +6,8 @@ sys.path.append('./lib')
 import di  
 import MT5
 
+from OptionsAnalysis.analysis import OptionsAnalysis
+
 api = Blueprint('api', __name__)
 
 @api.route('/api/last-ticker-data', methods=['GET'])
@@ -43,6 +45,19 @@ def get_historical_ticker_data():
         return jsonify({'error': f'No historical data found for {ticker}'}), 404
         
     return jsonify(historical_data)
+
+@api.route('/api/dolar-options', methods=['GET'])
+def get_dolar_options():
+    analyzer = OptionsAnalysis(5.80, "H25", 'data/calls.csv', 'data/puts.csv')
+    df = analyzer.getOptionsData()
+    
+    # Convert DataFrame to dict and format response
+    result = {
+        'options': df[['Strike', 'OI', 'Tipo']].to_dict(orient='records'),
+        'timestamp': int(time.time())
+    }
+    
+    return jsonify(result)
 
 @api.route('/api/estimate-cdi', methods=['GET'])
 def get_CDI_estimate():

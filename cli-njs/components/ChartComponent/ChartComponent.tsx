@@ -1,3 +1,4 @@
+//https://github.com/tradingview/lightweight-charts/blob/master/plugin-examples/
 import { createChart, ColorType, IChartApi, ISeriesApi } from 'lightweight-charts';
 import { useEffect, useRef } from 'react';
 

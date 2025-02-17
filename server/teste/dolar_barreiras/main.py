@@ -13,6 +13,10 @@ def main(calls_csv, puts_csv, current_price, contract_filter="H25"):
     loader = OptionsDataLoader()
     df = loader.prepare_data(calls_csv, puts_csv, contract_filter)
     
+    table_data = pd.DataFrame({'Strike': df['Strike'], 'Open Interest': df['OI']})
+    print(table_data.to_string(index=False))
+    
+    return
     # Instancia o analisador
     analyzer = OptionsAnalysis(df, current_price)
     
