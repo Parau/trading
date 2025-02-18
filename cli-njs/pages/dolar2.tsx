@@ -49,6 +49,9 @@ export default function DolarPage() {
       am5xy.ValueAxis.new(root, {
         renderer: am5xy.AxisRendererY.new(root, { pan: 'zoom' }),
         extraMin: 0.1,
+        min: 4800,           
+        max: 6500,          
+        strictMinMax: true,  // Force these limits
         tooltip: am5.Tooltip.new(root, {}),
         numberFormat: '#,###.00',
         extraTooltipPrecision: 2
@@ -124,16 +127,16 @@ export default function DolarPage() {
     valueLegend.data.setAll([valueSeries]);
 
     // Create options panel
-    const optionsPanel = stockChart.panels.push(
+    /*const optionsPanel = stockChart.panels.push(
       am5stock.StockPanel.new(root, {
         wheelY: "zoomX",
         panX: true,
         height: 200
       })
-    );
+    );*/
 
     // Create value axis (x-axis for horizontal bars)
-    const optionsVolumeAxis = optionsPanel.xAxes.push(
+    const optionsVolumeAxis = mainPanel.xAxes.push(
       am5xy.ValueAxis.new(root, {
         renderer: am5xy.AxisRendererX.new(root, { opposite: true }),
         numberFormat: '#,###.00',
@@ -142,7 +145,7 @@ export default function DolarPage() {
     );
 
     // Create category axis (y-axis for strikes)
-    const optionsStrikeAxis = optionsPanel.yAxes.push(
+    /*const optionsStrikeAxis = mainPanel.yAxes.push(
       am5xy.CategoryAxis.new(root, {
         categoryField: "Strike",
         renderer: am5xy.AxisRendererY.new(root, {
@@ -150,48 +153,55 @@ export default function DolarPage() {
           cellStartLocation: 0.1,
           cellEndLocation: 0.9
         }),
+        min: 4800,           
+        max: 6500,          
+        strictMinMax: true,  // Force these limits
         tooltip: am5.Tooltip.new(root, {})
       })
-    );
+    );*/
 
     // Create series for calls
-    const callsSeries = optionsPanel.series.push(
+    const callsSeries = mainPanel.series.push(
       am5xy.ColumnSeries.new(root, {
         name: "Calls",
-        //clustered: false,
+        clustered: false,
         xAxis: optionsVolumeAxis,
-        yAxis: optionsStrikeAxis,
+        yAxis: closePriceAxis,
         // Swap valueXField and valueYField for horizontal bars
         valueYField: "Close",
         valueXField: "OI",
-        categoryYField: "Close",
+        //categoryYField: "Strike",
         fill: am5.color(0x00ff00),
         stroke: am5.color(0x00ff00)
       })
     );
+    callsSeries.columns.template.setAll({
+      rotation: -90,
+      //centerY: am5.percent(0)
+    });
 
     // Create series for puts
-    const putsSeries = optionsPanel.series.push(
+    const putsSeries = mainPanel.series.push(
       am5xy.ColumnSeries.new(root, {
         name: "Puts",
         xAxis: optionsVolumeAxis,
-        yAxis: optionsStrikeAxis,
+        yAxis: closePriceAxis,
         // Swap valueXField and valueYField for horizontal bars
         valueYField: "Close",
         valueXField: "OI",
-        categoryYField: "Close",
+        //categoryYField: "Strike",
         fill: am5.color(0xff0000),
         stroke: am5.color(0xff0000)
       })
     );
 
     // Add legend
-    const optionsLegend = optionsPanel.plotContainer.children.push(
+    const optionsLegend = mainPanel.plotContainer.children.push(
       am5stock.StockLegend.new(root, {
         stockChart: stockChart
       })
     );
-    optionsLegend.data.setAll([callsSeries, putsSeries]);
+    optionsLegend.data.setAll([valueSeries, callsSeries, putsSeries]);
 
     // Fetch and set options data
     const fetchOptionsData = async () => {
@@ -210,15 +220,14 @@ export default function DolarPage() {
 
         // Set data to series
         calls.forEach(call => call.Close = call.Strike * 1000); //para usas o mesmo eixo Y da série do candle
-        puts.forEach(puts => puts.Close = puts.Strike * 1000); //para usas o mesmo eixo Y da série do candle
         //console.log(calls);
 
         callsSeries.data.setAll(calls);
         putsSeries.data.setAll(puts);
         
         // Set all unique strikes as categories (must also multiply strikes here)
-        const strikes = [...new Set(data.options.map(opt => opt.Strike * 1000))].sort((a, b) => a - b);
-        optionsStrikeAxis.data.setAll(strikes.map(strike => ({ Strike: strike })));
+        //const strikes = [...new Set(data.options.map(opt => opt.Strike * 1000))].sort((a, b) => a - b);
+        //optionsStrikeAxis.data.setAll(strikes.map(strike => ({ Strike: strike })));
       } catch (error) {
         console.error('Error fetching options data:', error);
       }
