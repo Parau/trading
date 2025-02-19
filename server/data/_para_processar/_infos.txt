@@ -1,0 +1,5 @@
+arquivos nesta pasta serão verificados na inicialização do servidor e processados.
+
+https://www.b3.com.br/pt_br/market-data-e-indices/servicos-de-dados/market-data/consultas/boletim-diario/boletim-diario-do-mercado/
+
+BDI_03-1_20250217.pdf -> opções sobre dolar.

@@ -8,8 +8,9 @@ import time
 from datetime import datetime
 import sys
 sys.path.append('./lib')
-import di as di
+#import di as di
 from api import get_ticker_data, get_CDI_estimate, get_historical_ticker_data, get_dolar_options
+from lib import BoletimDiarioB3
 
 app = Flask(__name__)
 CORS(app, resources={
@@ -23,6 +24,9 @@ CORS(app, resources={
 # Load configuration settings if any
 # app.config.from_object('config.Config')
 
+print('Processando arquivos disponíveis em ./data/_para_processar/')
+BoletimDiarioB3.GenerateCSVOptionsDolar()
+print('FIM: Processando arquivos disponíveis em ./data/_para_processar/')
 app.add_url_rule('/api/last-ticker-data', view_func=get_ticker_data, methods=['GET'])
 app.add_url_rule('/api/estimate-cdi', view_func=get_CDI_estimate, methods=['GET'])
 app.add_url_rule('/api/historical-ticker-data', view_func=get_historical_ticker_data, methods=['GET'])

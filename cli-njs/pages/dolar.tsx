@@ -135,7 +135,7 @@ export default function DolarPage() {
     // Create value axis (x-axis for horizontal bars)
     const optionsVolumeAxis = optionsPanel.xAxes.push(
       am5xy.ValueAxis.new(root, {
-        renderer: am5xy.AxisRendererX.new(root, { opposite: true }),
+        renderer: am5xy.AxisRendererX.new(root, {  inversed: true, opposite: true }),
         numberFormat: '#,###.00',
         calculateTotals: true
       })
@@ -359,7 +359,6 @@ export default function DolarPage() {
     // Cleanup
     return () => {
       clearInterval(intervalId);
-      clearInterval(optionsIntervalId);
       root.dispose();
     };
   }, []);

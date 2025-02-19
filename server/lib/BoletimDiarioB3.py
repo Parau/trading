@@ -20,6 +20,8 @@ import pandas as pd
 import numpy as np
 from typing import List, Tuple
 import re
+import glob
+import os
 
 def extract_date_from_header(doc) -> str:
     """Extract date from the first page header"""
@@ -48,7 +50,7 @@ def extract_date_from_header(doc) -> str:
         return f"{year}-{month}-{day}"
     return None
 
-def extract_options_tables(pdf_path: str, output_path: str = '_sem-nome.xlsx', header: str = "Mercado de Opções Sobre Disponível - Compra", finish: str = "DOL: Dólar Comercial" ) -> str:
+def extract_options_tables(pdf_path: str, output_path: str, file:str, header: str = "Mercado de Opções Sobre Disponível - Compra", finish: str = "DOL: Dólar Comercial" ) -> str:
     doc = fitz.open(pdf_path)
     table_data: List[List[str]] = []
 
@@ -126,16 +128,40 @@ def extract_options_tables(pdf_path: str, output_path: str = '_sem-nome.xlsx', h
     # Acrescenta a coluna de data de referência
     df.insert(0, 'Data', reference_date)  # Insert 'Data' as first column with reference_date value
     
-    output_filename = pdf_path.replace('.pdf', output_path)
-    df.to_excel(output_filename, index=False)
-    df.to_csv(output_filename.replace('.xlsx', '.csv'), index=False, encoding='utf-8-sig', sep=';')  # Modificado aqui
+    output_filename = f"{output_path}{reference_date}_{file}.csv"
+    #df.to_excel(output_filename, index=False)
+    df.to_csv(output_filename, index=False, encoding='utf-8-sig', sep=';')
     
     doc.close()
     return output_filename
 
-def GenerateCSVOptions(pdf_file):
-    extract_options_tables(pdf_file, "_DOL_OP_Compra.xlsx", "Mercado de Opções Sobre Disponível - Compra")
-    extract_options_tables(pdf_file, "_DOL_OP_Venda.xlsx", "Mercado de Opções Sobre Disponível - Venda", "WDO: Dólar Míni")
+def GenerateCSVOptionsDolar():
+    pathTo = "./data/opcoes_dolar/"
+    pathFrom = "./data/_para_processar/"
+
+    # Print the absolute paths
+    print(f"Current working directory: {os.getcwd()}")
+
+    # Look for all BDI files in the pathFrom directory
+    #print(f"Path busca arquivos: {os.path.join(pathFrom, 'BDI_03-1_*.pdf')}")
+    bdi_files = glob.glob(os.path.join(pathFrom, "BDI_03-1_*.pdf"))
+    
+    for pdf_file in bdi_files:
+        print(f"Processing {pdf_file}...")
+        try:
+            # Extract options tables for both calls and puts
+            extract_options_tables(pdf_file, pathTo, "DOL_OP_Call", "Mercado de Opções Sobre Disponível - Compra")
+            extract_options_tables(pdf_file, pathTo, "DOL_OP_Put", "Mercado de Opções Sobre Disponível - Venda", "WDO: Dólar Míni")
+            
+            # Move file to processed folder after successful processing
+            processed_dir = os.path.join(pathFrom, 'arquivos_processados')
+            if not os.path.exists(processed_dir):
+                os.makedirs(processed_dir)
+            os.rename(pdf_file, os.path.join(processed_dir, os.path.basename(pdf_file)))
+            #print(f"Successfully moved {pdf_file} to processed folder")
+            
+        except Exception as e:
+            print(f"Erro processando o arquivo {pdf_file}: {str(e)}")
     return 
 
 
@@ -145,6 +171,10 @@ if __name__ == "__main__":
     #pdf_file = "BDI_03-1_20250131.pdf"
     #pdf_file = "BDI_03-1_20250204.pdf" 
     #pdf_file = "BDI_03-1_20250203.pdf" 
-    pdf_file = "BDI_03-1_20250213.pdf" 
-    output_file = extract_options_tables(pdf_file, "_DOL_OP_Compra.xlsx", "Mercado de Opções Sobre Disponível - Compra")
-    output_file = extract_options_tables(pdf_file, "_DOL_OP_Venda.xlsx", "Mercado de Opções Sobre Disponível - Venda", "WDO: Dólar Míni")
+    
+    ##
+    #pdf_file = "BDI_03-1_20250213.pdf" 
+    #output_file = extract_options_tables(pdf_file, "_DOL_OP_Compra.xlsx", "Mercado de Opções Sobre Disponível - Compra")
+    #output_file = extract_options_tables(pdf_file, "_DOL_OP_Venda.xlsx", "Mercado de Opções Sobre Disponível - Venda", "WDO: Dólar Míni")
+    os.chdir('E:/dev/trading/server/')
+    GenerateCSVOptionsDolar()

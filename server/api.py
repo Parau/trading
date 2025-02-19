@@ -7,6 +7,8 @@ import di
 import MT5
 
 from OptionsAnalysis.analysis import OptionsAnalysis
+import os
+import glob
 
 api = Blueprint('api', __name__)
 
@@ -48,7 +50,18 @@ def get_historical_ticker_data():
 
 @api.route('/api/dolar-options', methods=['GET'])
 def get_dolar_options():
-    analyzer = OptionsAnalysis(5.80, "H25", 'data/calls.csv', 'data/puts.csv')
+
+
+    # Get list of CSV files in the opcoes_dolar directory
+    calls_pattern = 'data/opcoes_dolar/*_DOL_OP_Call.csv'
+    puts_pattern = 'data/opcoes_dolar/*_DOL_OP_Put.csv'
+    
+    # Get the most recent files
+    calls_file = max(glob.glob(calls_pattern))
+    puts_file = max(glob.glob(puts_pattern))
+    
+    print(f'Calls file: {calls_file} and Puts file: {puts_file}')
+    analyzer = OptionsAnalysis(5.80, "H25", calls_file, puts_file)
     df = analyzer.getOptionsData()
     
     # Convert DataFrame to dict and format response
