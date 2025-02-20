@@ -7,9 +7,6 @@ import numpy as np
 import pandas as pd
 from scipy.stats import norm
 from sklearn.cluster import DBSCAN
-import matplotlib.pyplot as plt
-import seaborn as sns
-from datetime import datetime, date
 
 try:
     # Para importação como parte de um pacote (por exemplo, na aplicação servidor)
@@ -22,6 +19,7 @@ try:
     from .config import *
 except ImportError:
     from config import *
+
 
 class OptionsAnalysis:
     def __init__(self, current_price, contract_filter, calls='calls.csv', puts='puts.csv'):
@@ -223,4 +221,5 @@ class OptionsAnalysis:
         critical_levels.loc[:, 'Liquidity_Score'] = critical_levels['OI'] / max_oi
 
         return critical_levels.sort_values('Liquidity_Score', ascending=False)
+
 

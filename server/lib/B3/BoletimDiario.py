@@ -14,6 +14,9 @@
 # Mercado de Opções - Venda
 ## Extração de dados escolhido o PyMuPDF por suportar também outros tipos de arquivo.
 # https://pymupdf.readthedocs.io/
+####
+# Encontrei esta página aqui trazendo os dados do dolar como uma página web. Lembrar que vi em algum lugar que fevereiro 2025 algumas páginas da b3 não seriam atualizadas.
+# https://www2.bmf.com.br/pages/portal/bmfbovespa/boletim1/SistemaPregao1.asp?pagetype=pop&caminho=Resumo%20Estat%EDstico%20-%20Sistema%20Preg%E3o&Data=18/02/2025&Mercadoria=DOL
 
 import fitz  # PyMuPDF
 import pandas as pd
